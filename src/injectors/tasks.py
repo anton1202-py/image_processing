@@ -1,4 +1,4 @@
-from base_module.sevices.rabbit import RabbitService
+from base_module.services.rabbit import RabbitService
 from config import config
 
 

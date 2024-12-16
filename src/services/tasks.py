@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session as PGSession
 from base_module import sa_operator
 from base_module.exceptions import ModuleException
 from base_module.rabbit import TaskIdentMessageModel
-from base_module.sevices.rabbit import RabbitService
+from base_module.services.rabbit import RabbitService
 from models.orm_models import FileInfo, ImageProcessingTask, TaskStatus
 
 

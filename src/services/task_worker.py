@@ -11,7 +11,7 @@ from base_module.exceptions import ModuleException
 from base_module.logger import ClassesLoggerAdapter
 from base_module.mule import BaseMule
 from base_module.rabbit import TaskIdentMessageModel
-from base_module.sevices.rabbit import RabbitService
+from base_module.services.rabbit import RabbitService
 from models.orm_models import FileInfo, ImageProcessingTask, TaskStatus
 
 
