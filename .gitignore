@@ -126,6 +126,8 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+migrations/
+migrations
 .env
 .venv
 env/
