@@ -57,7 +57,8 @@ class ImageProcessing:
         with self._pg.begin():
             q = self._pg.query(ImageProcessingTask)
             q = q.order_by(sa.desc(ImageProcessingTask.created_at))
-            return q.all()
+            q_list = [q_obj.dump() for q_obj in q]
+            return q_list
 
     def get(self, task_id: int) -> ImageProcessingTask:
         with self._pg.begin():

@@ -26,7 +26,7 @@ class ProjectConfig(Model):
     """."""
 
     pg: PgConfig = dc.field(default_factory=PgConfig)
-    storage_dir: str = dc.field(default="/home/orbis-service/Downloads/")
+    storage_dir: str = dc.field(default="/mnt")
     rabbit: RabbitFullConfig = dc.field(default=None)
 
 

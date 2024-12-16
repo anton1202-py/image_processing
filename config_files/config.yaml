@@ -1,0 +1,15 @@
+pg:
+  host: db
+  port: 5432
+  user: admin
+  password: testadmin
+  database: filedb
+  max_pool_connections: 100
+
+rabbit:
+  host: rabbitmq
+  port: 5672
+  user: guest
+  password: guest
+  routing_key: image-processing-tasks
+  queue_name: image-processing-tasks

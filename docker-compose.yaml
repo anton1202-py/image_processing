@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15.0-alpine
+    environment:
+      POSTGRES_DB: filedb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: testadmin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  
+  rabbitmq:
+    image: rabbitmq:3
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+  
+  file-sync:
+    image: file-sync:1.0.0
+    environment:
+      YAML_PATH: config_files/config.yaml
+    restart: "always"
+    ports:
+      - "5001:5001"
+    volumes:
+      - /home/orbis-service/Projects/image_processing/config_files/:/src/config_files
+
+  image-processing:
+    image: image-processing:1.0.0
+    environment:
+      YAML_PATH: config_files/config.yaml
+    restart: "always"
+    ports:
+      - "5000:5000"
+    volumes:
+      - /home/orbis-service/Projects/image_processing/config_files/:/src/config_files
+
+  image-processing-worker:
+    image: image-processing:1.0.0
+    environment:
+      YAML_PATH: config_files/config.yaml
+    restart: "always"
+    command: ["python3.10", "-u", "scripts/tasks_worker.py"] 
+    volumes:
+      - /home/orbis-service/Projects/image_processing/config_files/:/src/config_files
+
+volumes:
+  postgres_data:
