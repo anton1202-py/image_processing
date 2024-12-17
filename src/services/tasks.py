@@ -7,7 +7,7 @@ from base_module import sa_operator
 from base_module.exceptions import ModuleException
 from base_module.rabbit import TaskIdentMessageModel
 from base_module.services.rabbit import RabbitService
-from models.orm_models import FileInfo, ImageProcessingTask, TaskStatus
+from models.orm_models import ImageProcessingTask, TaskStatus
 from services.services import FileStorageData
 
 
@@ -23,7 +23,7 @@ class ImageProcessing:
         self._rabbit = rabbit
         self._f_req = file_request
 
-    def check_exists(self, file_id: int) -> Optional[FileInfo]:
+    def check_exists(self, file_id: int) -> Optional[dict]:
         check_response = self._f_req.file_info_data(file_id)
         return check_response
 
