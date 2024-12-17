@@ -7,7 +7,7 @@ task_router = flask.Blueprint("tasks", __name__, url_prefix="/api/")
 
 
 @task_router.post("/processing/<int:file_id>")
-def processing_Image(file_id):
+def task_create(file_id):
     scale = request.get_json().get("scale", 100)
     angle_rotate = request.get_json().get("angle_rotate", 0)
     ts = processing_injector()
