@@ -1,9 +1,16 @@
+from base_module.services.rabbit import RabbitService
 from config import config
-from injectors.tasks import rabbit
+
 from services.task_worker import TasksWorker
 from services.tasks import ImageProcessing
 
 from . import connections
+
+
+
+def rabbit() -> RabbitService:
+    """."""
+    return RabbitService(config.rabbit)
 
 
 def processing_injector() -> ImageProcessing:
