@@ -1,5 +1,4 @@
 from typing import Optional
-
 import pika
 import sqlalchemy as sa
 from sqlalchemy.orm import Session as PGSession
@@ -9,6 +8,7 @@ from base_module.exceptions import ModuleException
 from base_module.rabbit import TaskIdentMessageModel
 from base_module.services.rabbit import RabbitService
 from models.orm_models import FileInfo, ImageProcessingTask, TaskStatus
+from services.services import FileStorageData
 
 
 class ImageProcessing:
@@ -17,12 +17,15 @@ class ImageProcessing:
         self,
         pg_connection: PGSession,
         rabbit: RabbitService,
+        file_request: FileStorageData
     ):
         self._pg = pg_connection
         self._rabbit = rabbit
+        self._f_req = file_request
 
     def check_exists(self, file_id: int) -> Optional[FileInfo]:
-        return self._pg.query(FileInfo).filter(FileInfo.id == file_id).first()
+        check_response = self._f_req.file_info_data(file_id)
+        return check_response
 
     def create_task(
         self, file_id: int, processing_parameters: dict
