@@ -2,7 +2,7 @@
 
 ## Запуск проекта  
 
-Клонируйте проект себе на компьютер:  
+Клонируйте проект:  
 `git clone git@github.com:anton1202-py/image_processing.git`
 
 
@@ -14,18 +14,18 @@
 
 ```
 pg:
-  host: HOST
-  port: POST
-  user: USERNAME
-  password: PASSWORD
+  host: db
+  port: DB_PORT
+  user: DB_USERNAME
+  password: DB_PASSWORD
   database: DATABASE_NAME
   max_pool_connections: MAX_POOL_CONNECTIONS
 
 rabbit:
-  host: rabbit
-  port: 5672
-  user: guest
-  password: guest
+  host: rabbitmq
+  port: RABBIT_PORT
+  user: RABBIT_USER
+  password: RABBIT_PASSWORD
   routing_key: file-tasks
   queue_name: file-tasks
 ```
@@ -38,7 +38,7 @@ rabbit:
 
 
 Кратко о функция:  
-1. Сервис создает задачи на обработку изображения.  
+1. Сервис создает задачи на обработку изображений.  
 POST: `api/processing/<int:file_id>`
 `
 {

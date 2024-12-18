@@ -131,6 +131,8 @@ migrations
 .env
 .venv
 env/
+.vscode/
+.vscode
 venv/
 ENV/
 env.bak/
