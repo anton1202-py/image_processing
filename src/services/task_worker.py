@@ -37,6 +37,14 @@ class TasksWorker(BaseMule):
         temp_dir = os.path.join(self._storage_dir, str(task_id))
         os.makedirs(temp_dir, exist_ok=True)
         return temp_dir
+    
+    def _scale_image(self, image, scale_percent):
+        """Масштабирование изображения"""
+        new_width = int(image.size[0] * (scale_percent / 100))
+        new_height = int(image.size[1] * (scale_percent / 100))
+        new_size = (new_width, new_height)
+        resized_image = image.resize(new_size, Image.Resampling.LANCZOS)
+        return resized_image
 
     def _handle(self, task: ImageProcessingTask):
         """Обработка задачи"""
@@ -56,16 +64,13 @@ class TasksWorker(BaseMule):
                 f.write(data.content)
 
             image = Image.open(temp_file_path)
+            task_type = task.task_type.value
+            task_type_value = task.task_type_value
 
-            scale_percent = task.processing_parameters.get("scale", 100)
-            new_width = int(image.size[0] * (scale_percent / 100))
-
-            new_height = int(image.size[1] * (scale_percent / 100))
-            new_size = (new_width, new_height)
-
-            resized_image = image.resize(new_size, Image.Resampling.LANCZOS)
-            rotate_angle = task.processing_parameters.get("angle_rotate", 0)
-            changed_image = resized_image.rotate(rotate_angle, expand=True)
+            if task_type == "scale":
+                changed_image = self._scale_image(image, task_type_value)
+            else:
+                changed_image = image.rotate(task_type_value, expand=True)
             
             new_name = f"{storage_file_data.get('name')}_{str(task.task_id)}{storage_file_data.get('extension', 'jpg')}"
             new_path = os.path.join(self._storage_dir, new_name)

@@ -16,23 +16,33 @@ class TaskStatus(ValuedEnum):
     DONE = "done"
 
 
+class TaskType(ValuedEnum):
+    """."""
+
+    ROTATE = "rotate"
+    SCALE = "scale"
+    ERROR = "error"
+
+
 @dc.dataclass
 class ImageProcessingTask(BaseOrmModel):
     """."""
 
-    __tablename__ = "Image_processing_task"
+    __tablename__ = "image_processing_task"
 
     task_id: typing.Optional[int] = dc.field(
         default=None, metadata={"sa": sa.Column(sa.Integer, primary_key=True)}
     )
     file_id: int = dc.field(default=None, metadata={"sa": sa.Column(sa.Integer)})
     processed_file_id: int = dc.field(default=0, metadata={"sa": sa.Column(sa.Integer)})
+    task_type: TaskType = dc.field(
+        default=None,
+        metadata={"sa": sa.Column(sa.Enum(TaskType, name="Image_processing_type"))},
+    )
+    task_type_value: int = dc.field(default=None, metadata={"sa": sa.Column(sa.Integer)})
     status: TaskStatus = dc.field(
         default=TaskStatus.NEW,
         metadata={"sa": sa.Column(sa.Enum(TaskStatus, name="Image_processing_status"))},
-    )
-    processing_parameters: dict = dc.field(
-        default=None, metadata={"sa": sa.Column(sa.JSON)}
     )
     created_at: typing.Optional[datetime] = dc.field(
         default_factory=datetime.now, metadata={"sa": sa.Column(sa.DateTime)}

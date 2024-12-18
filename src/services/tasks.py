@@ -7,7 +7,7 @@ from base_module import sa_operator
 from base_module.exceptions import ModuleException
 from base_module.rabbit import TaskIdentMessageModel
 from base_module.services.rabbit import RabbitService
-from models.orm_models import ImageProcessingTask, TaskStatus
+from models.orm_models import ImageProcessingTask, TaskStatus, TaskType
 from services.services import FileStorageData
 
 
@@ -28,18 +28,28 @@ class ImageProcessing:
         return check_response
 
     def create_task(
-        self, file_id: int, processing_parameters: dict
+        self, file_id: int, request_data: dict
     ) -> ImageProcessingTask:
-
-        if self.check_exists(file_id):
+        if "rotate" in request_data:
+            req_task_type = 'rotate'
+        elif "scale" in request_data:
+            req_task_type = 'scale'
+        else:
+            req_task_type = "error"
+        task_type_value = request_data.get(req_task_type, None)
+        task_type = TaskType.from_value(req_task_type)
+            
+        if self.check_exists(file_id) and req_task_type and task_type_value: 
             task = ImageProcessingTask(
                 file_id=file_id,
-                processing_parameters=processing_parameters,
+                task_type=task_type,
+                task_type_value=task_type_value
             )
         else:
             task = ImageProcessingTask(
                 file_id=file_id,
-                processing_parameters=processing_parameters,
+                task_type=task_type,
+                task_type_value=task_type_value,
                 status=TaskStatus.ERROR,
             )
 
