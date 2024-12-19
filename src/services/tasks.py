@@ -1,4 +1,5 @@
 from typing import Optional
+from flask import jsonify
 import pika
 import sqlalchemy as sa
 from sqlalchemy.orm import Session as PGSession
@@ -26,20 +27,36 @@ class ImageProcessing:
     def check_exists(self, file_id: int) -> Optional[dict]:
         check_response = self._f_req.file_info_data(file_id)
         return check_response
+    
+    def _task_type_checker(self, request_data: dict) -> dict:
+        req_task_type = None
+        task_type_value = None
 
-    def create_task(
-        self, file_id: int, request_data: dict
-    ) -> ImageProcessingTask:
         if "rotate" in request_data:
             req_task_type = 'rotate'
         elif "scale" in request_data:
             req_task_type = 'scale'
+        
+        if req_task_type:
+            task_type_value = request_data.get(req_task_type)
+
+        if req_task_type and task_type_value:
+            return {'task_type': TaskType.from_value(req_task_type), 'task_type_value': task_type_value}
         else:
-            req_task_type = "error"
-        task_type_value = request_data.get(req_task_type, None)
-        task_type = TaskType.from_value(req_task_type)
+            return
+
+    def create_task(
+        self, file_id: int, request_data: dict
+    ) -> ImageProcessingTask:
+
+        task_proc_type = self._task_type_checker(request_data)
+        if not task_proc_type:
+            return jsonify({"error": "Проверьте введенные данные"}), 400
+
+        task_type = task_proc_type.get('task_type')
+        task_type_value = task_proc_type.get('task_type_value')
             
-        if self.check_exists(file_id) and req_task_type and task_type_value: 
+        if self.check_exists(file_id): 
             task = ImageProcessingTask(
                 file_id=file_id,
                 task_type=task_type,

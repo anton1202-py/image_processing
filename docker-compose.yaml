@@ -27,6 +27,7 @@ services:
     ports:
       - "5001:5001"
     volumes:
+      - /home/orbis-service/Downloads/:/mnt
       - /home/orbis-service/Projects/image_processing/config_files/:/src/config_files
 
   image-processing:

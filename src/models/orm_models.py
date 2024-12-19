@@ -21,7 +21,6 @@ class TaskType(ValuedEnum):
 
     ROTATE = "rotate"
     SCALE = "scale"
-    ERROR = "error"
 
 
 @dc.dataclass

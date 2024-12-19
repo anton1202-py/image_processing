@@ -26,7 +26,7 @@ class ProjectConfig(Model):
     """."""
 
     pg: PgConfig = dc.field(default_factory=PgConfig)
-    storage_dir: str = dc.field(default="/mnt")
+    temp_dir: str = dc.field(default="/tmp")
     rabbit: RabbitFullConfig = dc.field(default=None)
 
 

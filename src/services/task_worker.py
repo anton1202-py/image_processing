@@ -1,11 +1,11 @@
 import os
-from datetime import datetime
 import shutil
+from datetime import datetime
 
 import sqlalchemy as sa
 from PIL import Image
 from sqlalchemy.orm import Session as PGSession
-from services.services import FileStorageData
+
 from base_module import sa_operator
 from base_module.exceptions import ModuleException
 from base_module.logger import ClassesLoggerAdapter
@@ -13,6 +13,7 @@ from base_module.mule import BaseMule
 from base_module.rabbit import TaskIdentMessageModel
 from base_module.services.rabbit import RabbitService
 from models.orm_models import ImageProcessingTask, TaskStatus
+from services.services import FileStorageData, ImageProcessor
 
 
 class TasksWorker(BaseMule):
@@ -23,34 +24,28 @@ class TasksWorker(BaseMule):
         rabbit: RabbitService,
         pg_connection: PGSession,
         file_request: FileStorageData,
-        storage_dir: str,
+        image_proc: ImageProcessor,
+        temp_dir: str,
     ):
         """Инициализация сервиса"""
         self._rabbit = rabbit
         self._pg = pg_connection
-        self._storage_dir = storage_dir
+        self._image_proc = image_proc
+        self._temp_dir = temp_dir
         self._logger = ClassesLoggerAdapter.create(self)
         self._f_req = file_request
-    
-    def _temp_dir(self, task_id: int) -> str:
+
+    def _task_temp_dir(self, task_id: int) -> str:
         """Создание временной папки"""
-        temp_dir = os.path.join(self._storage_dir, str(task_id))
-        os.makedirs(temp_dir, exist_ok=True)
-        return temp_dir
-    
-    def _scale_image(self, image, scale_percent):
-        """Масштабирование изображения"""
-        new_width = int(image.size[0] * (scale_percent / 100))
-        new_height = int(image.size[1] * (scale_percent / 100))
-        new_size = (new_width, new_height)
-        resized_image = image.resize(new_size, Image.Resampling.LANCZOS)
-        return resized_image
+        task_temp_dir = os.path.join(self._temp_dir, str(task_id))
+        os.makedirs(task_temp_dir, exist_ok=True)
+        return task_temp_dir
 
     def _handle(self, task: ImageProcessingTask):
         """Обработка задачи"""
         self._logger.info("Обработка задачи", extra={"task": task.task_id})
         task = ImageProcessingTask.load(task.dump())
-        temp_dir = self._temp_dir(task.task_id)
+        task_temp_dir = self._task_temp_dir(task.task_id)
         file_id = task.file_id
 
         try:
@@ -58,30 +53,28 @@ class TasksWorker(BaseMule):
             storage_file_data = self._f_req.file_info_data(file_id)
 
             temp_file = f"{file_id}_{str(task.task_id)}{storage_file_data.get('extension', 'jpg')}"
-            temp_file_path = os.path.join(temp_dir, temp_file)
+            temp_file_path = os.path.join(task_temp_dir, temp_file)
 
-            with open(temp_file_path, 'wb') as f:
+            with open(temp_file_path, "wb") as f:
                 f.write(data.content)
 
             image = Image.open(temp_file_path)
             task_type = task.task_type.value
             task_type_value = task.task_type_value
 
-            if task_type == "scale":
-                changed_image = self._scale_image(image, task_type_value)
-            else:
-                changed_image = image.rotate(task_type_value, expand=True)
-            
+            changed_image = self._image_proc.image_process(
+                image, task_type, task_type_value
+            )
+
             new_name = f"{storage_file_data.get('name')}_{str(task.task_id)}{storage_file_data.get('extension', 'jpg')}"
-            new_path = os.path.join(self._storage_dir, new_name)
+            new_path = os.path.join(self._temp_dir, new_name)
             changed_image.save(new_path)
-            
-            upload_file = self._f_req.file_upload(new_name, new_path, self._storage_dir)
-           
-            new_file_id = upload_file.get('file_id')
+
+            upload_file = self._f_req.file_upload(new_name, new_path)
+
+            new_file_id = upload_file.get("file_id")
             self._update_task_info(task, TaskStatus.DONE, new_file_id)
-            
-            
+
         except Exception as e:
             self._logger.critical(
                 "Ошибка обработки задачи",
@@ -90,7 +83,7 @@ class TasksWorker(BaseMule):
             )
             self._update_task_info(task, TaskStatus.ERROR)
         finally:
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            shutil.rmtree(task_temp_dir, ignore_errors=True)
             self._logger.info(
                 "Обработка задачи завершена", extra={"task": task.task_id}
             )

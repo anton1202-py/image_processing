@@ -1,7 +1,7 @@
 from base_module.services.rabbit import RabbitService
 from config import config
 
-from services.services import FileStorageData
+from services.services import FileStorageData, ImageProcessor
 from services.task_worker import TasksWorker
 from services.tasks import ImageProcessing
 
@@ -12,6 +12,11 @@ from . import connections
 def rabbit() -> RabbitService:
     """."""
     return RabbitService(config.rabbit)
+
+
+def image_processor() -> ImageProcessor:
+    """."""
+    return ImageProcessor()
 
 
 def file_storage_req() -> FileStorageData:
@@ -34,6 +39,7 @@ def tasks_mule() -> TasksWorker:
         rabbit=rabbit(),
         pg_connection=connections.pg.acquire_session(),
         file_request=file_storage_req(),
-        storage_dir=config.storage_dir
+        image_proc=image_processor(),
+        temp_dir=config.temp_dir
     )
 

@@ -10,7 +10,7 @@ task_router = flask.Blueprint("tasks", __name__, url_prefix="/api/")
 def task_create(file_id):
     ts = processing_injector()
     response = ts.create_task(file_id, request.get_json())
-    return jsonify(response)
+    return response
 
 
 @task_router.get("/tasks")
